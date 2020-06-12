@@ -23,7 +23,29 @@ class Parser {
 	}
 
 	private Expr expression() {
-		return equality();
+		return comma();
+	}
+
+	private Expr comma() {
+		Expr expr = ternary();
+
+		while (match(COMMA)) {
+			Expr right = ternary();
+			expr = new Expr.Comma(expr, right);
+		}
+
+		return expr;
+	}
+
+	private Expr ternary() {
+		Expr expr = equality();
+
+		while (match(QUESTION)) {
+			Expr right = comma();
+			expr = new Expr.Comma(expr, right);
+		}
+
+		return expr;
 	}
 
 	private Expr equality() {

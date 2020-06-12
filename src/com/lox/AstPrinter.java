@@ -16,6 +16,11 @@ class AstPrinter implements Expr.Visitor<String> {
 	}
 
 	@Override
+	public String visitCommaExpr(Expr.Comma expr) {
+		return parenthesize("comma", expr.left, expr.right);
+	}
+
+	@Override
 	public String visitLiteralExpr(Expr.Literal expr) {
 		if (expr.value == null) return "nil";
 		return expr.value.toString();
