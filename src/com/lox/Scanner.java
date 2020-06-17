@@ -36,6 +36,7 @@ public class Scanner {
 	}
 
 	Scanner(String source) {
+		// System.out.println(source);
 		this.source = source;
 	}
 
@@ -84,6 +85,8 @@ public class Scanner {
 			default:
 				if (isDigit(c)) {
 					number();
+				} else if (isAlpha(c)) {
+          			identifier();
 				} else {
 					Lox.error(line, "Unexpected character.");
 				}
@@ -150,7 +153,7 @@ public class Scanner {
 
 		TokenType type = keywords.get(text);
 		if (type == null) type = IDENTIFIER;
-		addToken(IDENTIFIER);
+		addToken(type);
 	}
 
 	private boolean isDigit(char c) {

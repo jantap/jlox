@@ -1,6 +1,6 @@
 BUILD_DIR := build
 
-default: jlox_run
+default: jlox_repl
 
 generate_ast:
 	@ $(MAKE) -f util/java.make DIR=src PACKAGE=tool
@@ -11,11 +11,14 @@ generate_ast:
 jlox: generate_ast
 	@ $(MAKE) -f util/java.make DIR=src PACKAGE=lox
 
-jlox_run: jlox
-	@ java -cp build/src com.lox.Lox
+jlox_repl: jlox
+	@ (pwd && java -cp build/src com.lox.Lox)
+
+run: jlox
+	@ (pwd && java -cp build/src com.lox.Lox main.lx)
 
 clean:
 	@ rm -rf $(BUILD_DIR)
 	@ rm -rf gen
 
-.PHONY: jlox generate_ast clean
+.PHONY: jlox_run jlox generate_ast clean
