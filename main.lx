@@ -1,7 +1,7 @@
-print (2+2);
-var a = 8;
 
-if (a == 8 or xsd == 231)
-	print "tak";
-else
-	print "nie";
+var a = 0;
+
+while (a < 10) {
+	print a;
+	a = a + 1;
+}
