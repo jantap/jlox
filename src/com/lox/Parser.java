@@ -223,19 +223,38 @@ class Parser {
 	}
 
 	private Expr lambda() {
-
 		if (match(FUN)) {
 			Token name = previous();
 			consume(LEFT_PAREN, "Expect '(' in lambda declaration");
 			List<Token> parameters = getParameters();
 			consume(RIGHT_PAREN, "Expect ')' in lambda declaration");
-			consume(LEFT_BRACE, "Expect '{' before lambda body.");
-			List<Stmt> body = block();
+
+			List<Stmt> body;
+			if (match(LEFT_BRACE)) {
+				body = block();
+			} else {
+				body = new ArrayList<>();
+				body.add(new Stmt.Return(previous(), expression()));
+			}
 
 			return new Expr.Lambda(name, parameters, body);
 		} else {
-			return or();
+			return ternary();
 		}
+	}
+
+	private Expr ternary() {
+		Expr expr = or();
+
+		if (match(QUESTION)) {
+			Expr then = expression();
+
+			consume(COLON, "Expect ':' after ternary operator");
+			Expr els = expression();
+			return new Expr.Ternary(expr, then, els);
+		}
+
+		return expr;
 	}
 
 	private Expr or() {

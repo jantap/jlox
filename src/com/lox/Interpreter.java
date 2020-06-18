@@ -6,6 +6,7 @@ import java.util.List;
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	final Environment globals = new Environment();
 	private Environment environment = globals;
+	java.util.Scanner in = new java.util.Scanner(System.in);
 
 	Interpreter() {
 		globals.define("clock", new LoxCallable() {
@@ -17,6 +18,26 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 			@Override
 			public Object call(Interpreter interpreter, List<Object> arguments) {
 				return (double) System.currentTimeMillis() / 1000.0;
+			}
+
+			@Override
+			public String toString() {
+				return "<native fn>";
+			}
+		});
+		globals.define("read", new LoxCallable() {
+			@Override
+			public int arity() {
+				return 1;
+			}
+
+			@Override
+			public Object call(Interpreter interpreter, List<Object> arguments) {
+				if ("number".equals(arguments.get(0))) {
+					return in.nextDouble();
+				} else {
+					return in.nextLine();
+				}
 			}
 
 			@Override
@@ -221,6 +242,16 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	public Object visitCommaExpr(Expr.Comma expr) {
 		evaluate(expr.left);
 		return evaluate(expr.right);
+	}
+
+	@Override
+	public Object visitTernaryExpr(Expr.Ternary expr) {
+		Object cond = evaluate(expr.condition);
+		if (isTruthy(cond)) {
+			return evaluate(expr.left);
+		} else {
+			return evaluate(expr.right);
+		}
 	}
 
 	void interpret(List<Stmt> statements) {

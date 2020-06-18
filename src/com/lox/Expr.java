@@ -12,6 +12,7 @@ abstract class Expr {
 		R visitLogicalExpr(Logical expr);
 		R visitUnaryExpr(Unary expr);
 		R visitCommaExpr(Comma expr);
+		R visitTernaryExpr(Ternary expr);
 		R visitLambdaExpr(Lambda expr);
 		R visitVariableExpr(Variable expr);
 	}
@@ -126,6 +127,22 @@ abstract class Expr {
 			return visitor.visitCommaExpr(this);
 		}
 
+		final Expr left;
+		final Expr right;
+	}
+	static class Ternary extends Expr {
+		Ternary(Expr condition, Expr left, Expr right) {
+			this.condition = condition;
+			this.left = left;
+			this.right = right;
+		}
+
+		@Override
+		<R> R accept(Visitor<R> visitor) {
+			return visitor.visitTernaryExpr(this);
+		}
+
+		final Expr condition;
 		final Expr left;
 		final Expr right;
 	}
