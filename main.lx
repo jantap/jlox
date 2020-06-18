@@ -1,24 +1,7 @@
 print (2+2);
 var a = 8;
-print (2 + a);
-a = 2;
-print (2 + a);
-var a = "global a";
-var b = "global b";
-var c = "global c";
-{
-  var a = "outer a";
-  var b = "outer b";
-  {
-    var a = "inner a";
-    print a;
-    print b;
-    print c;
-  }
-  print a;
-  print b;
-  print c;
-}
-print a;
-print b;
-print c;
+
+if (a == 8 or xsd == 231)
+	print "tak";
+else
+	print "nie";

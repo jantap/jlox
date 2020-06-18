@@ -36,6 +36,16 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	}
 
 	@Override
+	public Void visitIfStmt(Stmt.If stmt) {
+		if (isTruthy(evaluate(stmt.condition))) {
+			execute(stmt.thenBranch);
+		} else if (stmt.elseBranch != null) {
+			execute(stmt.elseBranch);
+		}
+		return null;
+	}
+
+	@Override
 	public Object visitLiteralExpr(Expr.Literal expr) {
 		return expr.value;
 	}
@@ -54,7 +64,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 				return !isTruthy(right);
 			case MINUS:
 				checkNumberOperand(expr.operator, right);
-				return -(double)right;
+				return -(double) right;
 		}
 
 		return null;
@@ -68,35 +78,35 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 		switch (expr.operator.type) {
 			case MINUS:
 				checkNumberOperands(expr.operator, left, right);
-				return (double)left - (double)right;
+				return (double) left - (double) right;
 			case PLUS:
 				if (left instanceof Double && right instanceof Double) {
-					return (double)left + (double)right;
+					return (double) left + (double) right;
 				}
 
 				if (left instanceof String && right instanceof String) {
-					return (String)left + (String)right;
+					return (String) left + (String) right;
 				}
 
 				throw new RuntimeError(expr.operator, "Operands must be two numbers or two strings.");
 			case SLASH:
 				checkNumberOperands(expr.operator, left, right);
-				return (double)left / (double)right;
+				return (double) left / (double) right;
 			case STAR:
 				checkNumberOperands(expr.operator, left, right);
-				return (double)left * (double)right;
+				return (double) left * (double) right;
 			case GREATER:
 				checkNumberOperands(expr.operator, left, right);
-				return (double)left > (double)right;
+				return (double) left > (double) right;
 			case GREATER_EQUAL:
 				checkNumberOperands(expr.operator, left, right);
-				return (double)left >= (double)right;
+				return (double) left >= (double) right;
 			case LESS:
 				checkNumberOperands(expr.operator, left, right);
-				return (double)left < (double)right;
+				return (double) left < (double) right;
 			case LESS_EQUAL:
 				checkNumberOperands(expr.operator, left, right);
-				return (double)left <= (double)right;
+				return (double) left <= (double) right;
 			case BANG_EQUAL:
 				return !isEqual(left, right);
 			case EQUAL_EQUAL:
@@ -117,6 +127,21 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
 		environment.assign(expr.name, value);
 		return value;
+	}
+
+	@Override
+	public Object visitLogicalExpr(Expr.Logical expr) {
+		Object left = evaluate(expr.left);
+
+		if (expr.operator.type == TokenType.OR) {
+			if (isTruthy(left))
+				return left;
+		} else {
+			if (!isTruthy(left))
+				return left;
+		}
+
+		return evaluate(expr.right);
 	}
 
 	@Override
@@ -153,25 +178,31 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	}
 
 	private void checkNumberOperand(Token operator, Object operand) {
-		if (operand instanceof Double) return;
+		if (operand instanceof Double)
+			return;
 		throw new RuntimeError(operator, "Operand must be a number");
 	}
 
 	private void checkNumberOperands(Token operator, Object left, Object right) {
-		if (left instanceof Double && right instanceof Double) return;
+		if (left instanceof Double && right instanceof Double)
+			return;
 		throw new RuntimeError(operator, "Operands must be numbers");
 	}
 
 	private boolean isEqual(Object a, Object b) {
-		if (a == null && b == null) return true;
-		if (a == null) return false;
+		if (a == null && b == null)
+			return true;
+		if (a == null)
+			return false;
 
 		return a.equals(b);
 	}
 
 	private boolean isTruthy(Object object) {
-		if (object == null) return false;
-		if (object instanceof Boolean) return (boolean)object;
+		if (object == null)
+			return false;
+		if (object instanceof Boolean)
+			return (boolean) object;
 		return true;
 	}
 
@@ -180,7 +211,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 	}
 
 	private String stringify(Object object) {
-		if (object == null) return "nil";
+		if (object == null)
+			return "nil";
 
 		// Hack. Work around Java adding ".0" to integer-valued doubles.
 		if (object instanceof Double) {
