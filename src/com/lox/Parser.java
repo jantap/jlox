@@ -31,6 +31,8 @@ class Parser {
 
 	private Stmt declaration() {
 		try {
+			if (match(FUN))
+				return function("function");
 			if (match(VAR))
 				return varDeclaration();
 
@@ -60,6 +62,8 @@ class Parser {
 			return ifStatement();
 		if (match(PRINT))
 			return printStatement();
+		if (match(RETURN))
+			return returnStatement();
 		if (match(WHILE))
 			return whileStatement();
 		if (match(LEFT_BRACE))
@@ -159,12 +163,49 @@ class Parser {
 		return body;
 	}
 
+	private Stmt returnStatement() {
+		Token keyword = previous();
+		Expr value = null;
+		if (!check(SEMICOLON)) {
+			value = expression();
+		}
+
+		consume(SEMICOLON, "Expect ';' after return value.");
+		return new Stmt.Return(keyword, value);
+	}
+
+	private Stmt.Function function(String kind) {
+		Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
+
+		consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
+		List<Token> parameters = getParameters();
+		consume(RIGHT_PAREN, "Expect ')' after parameters.");
+
+		consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
+		List<Stmt> body = block();
+		return new Stmt.Function(name, parameters, body);
+	}
+
+	private List<Token> getParameters() {
+		List<Token> parameters = new ArrayList<>();
+		if (!check(RIGHT_PAREN)) {
+			do {
+				if (parameters.size() >= 255) {
+					error(peek(), "Cannot have more than 255 parameters.");
+				}
+
+				parameters.add(consume(IDENTIFIER, "Expect parameter name."));
+			} while (match(COMMA));
+		}
+		return parameters;
+	}
+
 	private Expr expression() {
 		return assignment();
 	}
 
 	private Expr assignment() {
-		Expr expr = or();
+		Expr expr = lambda();
 
 		if (match(EQUAL)) {
 			Token equals = previous();
@@ -179,6 +220,22 @@ class Parser {
 		}
 
 		return expr;
+	}
+
+	private Expr lambda() {
+
+		if (match(FUN)) {
+			Token name = previous();
+			consume(LEFT_PAREN, "Expect '(' in lambda declaration");
+			List<Token> parameters = getParameters();
+			consume(RIGHT_PAREN, "Expect ')' in lambda declaration");
+			consume(LEFT_BRACE, "Expect '{' before lambda body.");
+			List<Stmt> body = block();
+
+			return new Expr.Lambda(name, parameters, body);
+		} else {
+			return or();
+		}
 	}
 
 	private Expr or() {
@@ -271,7 +328,37 @@ class Parser {
 			return new Expr.Unary(operator, right);
 		}
 
-		return primary();
+		return call();
+	}
+
+	private Expr call() {
+		Expr expr = primary();
+		while (true) {
+			if (match(LEFT_PAREN)) {
+				expr = finishCall(expr);
+			} else {
+				break;
+			}
+		}
+
+		return expr;
+	}
+
+	private Expr finishCall(Expr callee) {
+		List<Expr> arguments = new ArrayList<>();
+
+		if (!check(RIGHT_PAREN)) {
+			if (arguments.size() >= 255) {
+				error(peek(), "Cannot have more than 255 arguments.");
+			}
+			do {
+				arguments.add(expression());
+			} while (match(COMMA));
+		}
+
+		Token paren = consume(RIGHT_PAREN, "Expect ')' after arguments");
+
+		return new Expr.Call(callee, paren, arguments);
 	}
 
 	private Expr primary() {
