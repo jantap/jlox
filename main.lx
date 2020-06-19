@@ -1,6 +1,12 @@
 
-var double = fun(fn, x) {
-	return fn(x);
-};
+print("======");
 
-print double(fun(x) { return x * 3; }, 6);
+var x = read("number");
+
+var fn = x == 2 
+			? fun(x) x * 2 
+			: x == 3 
+				? fun(x) x * 3
+				: fun(x) 0;
+
+print(fn(210));
